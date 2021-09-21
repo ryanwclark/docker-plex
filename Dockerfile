@@ -8,6 +8,7 @@ ENV PLEX_RELEASE="1.24.3.5033-757abe6b4"
 LABEL build_version="version:- ${VERSION} Build-date:- ${BUILD_DATE}"
 LABEL maintainer="Ryan Clark <ryanwclark@yahoo.com>"
 
+
 #Add needed nvidia environment variables for https://github.com/NVIDIA/nvidia-docker
 ENV NVIDIA_DRIVER_CAPABILITIES="compute,video,utility"
 

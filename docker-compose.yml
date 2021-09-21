@@ -1,0 +1,279 @@
+version: "3.4"
+
+volumes:
+  # plex_plex-data:
+  #   external: true
+
+  tv-shows:
+    name: tv-shows
+    driver_opts:
+      type: nfs
+      o: addr=192.168.1.210,nolock,soft,rw
+      device: :${MEDIADIR_TV}
+  movies:
+    name: movies
+    driver_opts:
+      type: nfs
+      o: addr=192.168.1.210,nolock,soft,rw
+      device: :${MEDIADIR_MOVIES}
+  music:
+    name: music
+    driver_opts:
+      type: nfs
+      o: addr=192.168.1.210,nolock,soft,rw
+      device: :${MEDIADIR_MUSIC}
+  pictures:
+    name: pictures
+    driver_opts:
+      type: nfs
+      o: addr=192.168.1.210,nolock,soft,rw
+      device: :${MEDIADIR_PICTURES}
+  downloads:
+    name: downloads
+    driver_opts:
+      type: nfs
+      o: addr=192.168.1.210,nolock,soft,rw
+      device: :${MEDIADIR_DOWNLOADS}
+  shared:
+    name: shared
+    driver_opts:
+      type: nfs
+      o: addr=192.168.1.210,nolock,soft,rw
+      device: :${MEDIADIR_SHARE}
+  plex_config:
+    name: plex_config
+    driver_opts:
+      type: nfs
+      o: addr=192.168.1.210,nolock,soft,rw
+      device: :${MEDIADIR_CONFIG}/plex
+  tautulli_config:
+    name: tautulli_config
+    driver_opts:
+      type: nfs
+      o: addr=192.168.1.210,nolock,soft,rw
+      device: :${MEDIADIR_CONFIG}/tautulli
+  lidarr_config:
+    name: lidarr_config
+    driver_opts:
+      type: nfs
+      o: addr=192.168.1.210,nolock,soft,rw
+      device: :${MEDIADIR_CONFIG}/lidarr
+  radarr_config:
+    name: radarr_config
+    driver_opts:
+      type: nfs
+      o: addr=192.168.1.210,nolock,soft,rw
+      device: :${MEDIADIR_CONFIG}/radarr
+  sonarr_config:
+    name: sonarr_config
+    driver_opts:
+      type: nfs
+      o: addr=192.168.1.210,nolock,soft,rw
+      device: :${MEDIADIR_CONFIG}/sonarr
+  
+
+services:
+  plex:
+    image: ghcr.io/linuxserver/plex:latest
+    container_name: plex
+    # deploy:
+    #   mode: replicated
+    #   replicas: 1
+    #   placement:
+    #     constraints:
+    #       - node.role == manager
+    #   restart_policy: 
+    #     condition: on-failure
+    #     delay: 5s
+    #     max_attempts: 5
+      
+    ports:
+    - ${PLEX_PORT_1900}:1900/udp
+    - ${PLEX_PORT_3005}:3005
+    - ${PLEX_PORT_32400}:32400
+    - ${PLEX_PORT_32410}:32410/udp
+    - ${PLEX_PORT_32412}:32412/udp
+    - ${PLEX_PORT_32413}:32413/udp
+    - ${PLEX_PORT_32414}:32414/udp
+    - ${PLEX_PORT_32469}:32469
+    - ${PLEX_PORT_33400}:33400
+    - ${PLEX_PORT_5353}:5353/udp
+    - ${PLEX_PORT_8324}:8324
+
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - plex_config:/config
+      - tv-shows:/media/tv
+      - movies:/media/movies
+      - music:/media/music
+      - pictures:/media/pictures
+
+    environment:
+      - TZ=${TZ}
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - PLEX_CLAIM=${PLEX_CLAIM}
+      - VERSION=${PLEX_VERSION}
+      # - UMASK=
+  
+  #Tautulli
+  tautulli:
+    image: ghcr.io/linuxserver/tautulli:latest
+    container_name: tautulli
+    restart: unless-stopped
+
+    # hostname: ${DOCKERHOSTNAME}
+    
+    # logging:
+    #   driver: json-file
+    #   options:
+    #     max-file: ${DOCKERLOGGING_MAXFILE}
+    #     max-size: ${DOCKERLOGGING_MAXSIZE}
+    
+    ports:
+    - ${TAUTULLI_PORT_8181}:8181
+    
+    volumes:
+    - /etc/localtime:/etc/localtime:ro
+    - tautulli_config:/config
+    # - plex_config/Library/Application Support/Plex Media Server/Logs:/logs:ro
+    - shared:/shared
+  
+    environment:
+    - TZ=${TZ}
+    - PGID=${PGID}
+    - PUID=${PUID}
+
+  lidarr:
+    image: ghcr.io/linuxserver/lidarr:latest
+    container_name: lidarr
+    restart: unless-stopped
+    
+    ports:
+      - ${LIDARR_PORT_8686}:8686
+    
+    volumes:
+      - lidarr_config:/config
+      - downloads:/downloads
+      - music:/music
+    
+    environment:
+      - TZ=${TZ}
+      - PUID=${PUID}
+      - PGID=${PGID}
+      # - UMASK=777
+    
+  
+  radarr:
+    image: ghcr.io/linuxserver/radarr:latest
+    container_name: radarr
+    
+    environment:
+      - TZ=${TZ}
+      - PUID=${PUID}
+      - PGID=${PGID}
+      # - UMASK=777
+    
+    ports:
+      - ${RADARR_PORT_7878}:7878/tcp
+    
+    volumes:
+      - radarr_config:/config
+      - downloads:/downloads
+      - movies:/movies
+    
+    restart: unless-stopped
+  
+
+  sonarr:
+    image: ghcr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    
+    environment:
+      - TZ=${TZ}
+      - PUID=${PUID}
+      - PGID=${PGID}
+      # - UMASK=777
+    
+    ports:
+      - ${SONARR_PORT_8989}:8989/tcp
+    
+    volumes:
+      - sonarr_config:/config
+      - sonarr_config:/dev/rtc
+      - downloads:/downloads
+      - tv-shows:/tv
+    
+    restart: unless-stopped
+
+  transmission:
+    container_name: transmission
+    environment:
+    - PGID=${PGID}
+    - PUID=${PUID}
+    - TZ=${TZ}
+    hostname: ${DOCKERHOSTNAME}
+    image: ghcr.io/linuxserver/transmission
+    logging:
+      driver: json-file
+      options:
+        max-file: ${DOCKERLOGGING_MAXFILE}
+        max-size: ${DOCKERLOGGING_MAXSIZE}
+    ports:
+    - ${TRANSMISSION_PORT_51413}:51413
+    - ${TRANSMISSION_PORT_51413}:51413/udp
+    - ${TRANSMISSION_PORT_6881}:6881
+    - ${TRANSMISSION_PORT_6881}:6881/udp
+    - ${TRANSMISSION_PORT_9091}:9091
+    restart: unless-stopped
+    volumes:
+    - /etc/localtime:/etc/localtime:ro
+    - ${DOCKERCONFDIR}/transmission:/config
+    - ${DOCKERSHAREDDIR}:/shared
+    - ${DOWNLOADSDIR}:/downloads
+    - ${DOWNLOADSDIR}/watch:/watch
+  transmissionvpn:
+    cap_add:
+    - NET_ADMIN
+    container_name: transmissionvpn
+    devices:
+    - /dev/net/tun
+    dns:
+    - ${NS1}
+    - ${NS2}
+    environment:
+    - CREATE_TUN_DEVICE=true
+    - LOCAL_NETWORK=${LAN_NETWORK}
+    - OPENVPN_OPTS=${VPN_OPTIONS}
+    - OPENVPN_PASSWORD=${VPN_PASS}
+    - OPENVPN_PROVIDER=${VPN_PROV}
+    - OPENVPN_USERNAME=${VPN_USER}
+    - PGID=${PGID}
+    - PUID=${PUID}
+    - TRANSMISSION_DOWNLOAD_DIR=/downloads/completed
+    - TRANSMISSION_HOME=/config
+    - TRANSMISSION_INCOMPLETE_DIR=/downloads/incomplete
+    - TRANSMISSION_WATCH_DIR=/downloads/watch
+    - TZ=${TZ}
+    hostname: ${DOCKERHOSTNAME}
+    image: haugene/transmission-openvpn
+    logging:
+      driver: json-file
+      options:
+        max-file: ${DOCKERLOGGING_MAXFILE}
+        max-size: ${DOCKERLOGGING_MAXSIZE}
+    ports:
+    - ${TRANSMISSIONVPN_PORT_51413}:51413
+    - ${TRANSMISSIONVPN_PORT_51413}:51413/udp
+    - ${TRANSMISSIONVPN_PORT_6881}:6881
+    - ${TRANSMISSIONVPN_PORT_6881}:6881/udp
+    - ${TRANSMISSIONVPN_PORT_9091}:9091
+    restart: unless-stopped
+    volumes:
+    - /etc/localtime:/etc/localtime:ro
+    - ${DOCKERCONFDIR}/transmissionvpn:/config
+    - ${DOCKERSHAREDDIR}:/shared
+    - ${DOWNLOADSDIR}:/data
+    - ${DOWNLOADSDIR}:/downloads
+    - ${VPN_OVPNDIR}:/config/openvpn
+    - ${VPN_OVPNDIR}:/etc/openvpn/custom/

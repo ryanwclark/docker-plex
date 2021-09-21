@@ -19,7 +19,7 @@ PLEX_ARCH="amd64" \
 PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR="/config/Library/Application Support" \
 PLEX_MEDIA_SERVER_HOME="/usr/lib/plexmediaserver" \
 PLEX_MEDIA_SERVER_MAX_PLUGIN_PROCS="6" \
-PLEX_MEDIA_SERVER_USER="abc" \
+# PLEX_MEDIA_SERVER_USER="abc" \
 PLEX_MEDIA_SERVER_INFO_VENDOR="Docker" \
 PLEX_MEDIA_SERVER_INFO_DEVICE="Docker Container"
 
@@ -55,7 +55,7 @@ RUN \
 	"${PLEX_DOWNLOAD}/${PLEX_RELEASE}/debian/plexmediaserver_${PLEX_RELEASE}_${PLEX_ARCH}.deb" && \
  dpkg -i /tmp/plexmediaserver.deb && \
  echo "**** ensure abc user's home folder is /app ****" && \
- usermod -d /app abc && \
+#  usermod -d /app abc && \
  echo "**** cleanup ****" && \
  apt-get clean && \
  rm -rf \

@@ -4,6 +4,7 @@ FROM ryanwclark/debian-slim:bullseye-slim
 ARG BUILD_DATE
 ARG VERSION
 ARG PLEX_RELEASE
+ENV PLEX_RELEASE="1.24.3.5033-757abe6b4"
 LABEL build_version="version:- ${VERSION} Build-date:- ${BUILD_DATE}"
 LABEL maintainer="Ryan Clark <ryanwclark@yahoo.com>"
 

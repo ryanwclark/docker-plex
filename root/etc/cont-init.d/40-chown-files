@@ -3,7 +3,7 @@
 # create folders
 if [ ! -d "${PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR}" ]; then \
 mkdir -p "${PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR}"
-chown -R abc:abc /config
+# chown -R abc:abc /config
 fi
 
 # check Library permissions
@@ -11,8 +11,8 @@ PUID=${PUID:-911}
 if [ ! "$(stat -c %u /config/Library)" = "$PUID" ]; then
 	echo "Change in ownership detected, please be patient while we chown existing files"
 	echo "This could take some time"
-	chown abc:abc -R \
-	/config/Library
+	# chown abc:abc -R \
+	# /config/Library
 fi
 
 # remove plex pid after unclean stop
@@ -20,6 +20,6 @@ fi
   rm -f "/config/Library/Application Support/Plex Media Server/plexmediaserver.pid"
 
 # permissions (non-recursive) on config root and folders
-chown abc:abc \
-	/config \
-	/config/*
+# chown abc:abc \
+# 	/config \
+# 	/config/*

@@ -55,7 +55,7 @@ RUN \
 	"${PLEX_DOWNLOAD}/${PLEX_RELEASE}/debian/plexmediaserver_${PLEX_RELEASE}_${PLEX_ARCH}.deb" && \
  dpkg -i /tmp/plexmediaserver.deb && \
  echo "**** ensure abc user's home folder is /app ****" && \
- usermod -d /app abc && \
+#  usermod -d /app abc && \
  echo "**** cleanup ****" && \
  apt-get clean && \
  rm -rf \
